@@ -1,9 +1,7 @@
+#include "block.h"
+#include <iostream>
 
-
-
-int main(){
-
-
-
+int main()
+{
     return 0;
 }

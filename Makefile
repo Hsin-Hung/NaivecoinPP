@@ -14,9 +14,9 @@ run: clean all
 	@echo "🚀 Executing..."
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/main.cpp $(SRC)/*/*.cpp
+$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
 	@echo "🚧 Building..."
-	$(CXX) $(CXX_FLAGS) -I$(SRC) $(LIBRARIES) -g $^ -o $@
+	$(CXX) $(CXX_FLAGS) -I$(SRC) $(LIBRARIES) -g $^ -o $@ -lssl -lcrypto
 
 clean:
 	@echo "🧹 Clearing..."
