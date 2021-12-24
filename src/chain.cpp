@@ -2,7 +2,7 @@
 
 Chain *Chain::instance = nullptr;
 
-Chain::Chain() : blockChain{Block::genesisBlock} {};
+Chain::Chain() : blockChain{genesisBlock} {};
 
 Chain *Chain::getInstance()
 {
@@ -45,7 +45,7 @@ bool Chain::isValidBlockStructure(Block &block)
 bool Chain::isValidChain()
 {
 
-    if (Block::genesisBlock != blockChain.at(0))
+    if (genesisBlock != blockChain.at(0))
     {
         return false;
     }
@@ -66,6 +66,8 @@ Block &Chain::getLastestBlock()
     return blockChain.back();
 }
 
+void Chain::broadcastLatest() {}
+
 void Chain::replaceChain(std::vector<Block> newChain)
 {
 
@@ -76,4 +78,30 @@ void Chain::replaceChain(std::vector<Block> newChain)
     }
 }
 
-void Chain::broadcastLatest() {}
+std::vector<Block> Chain::getBlockChain()
+{
+    return blockChain;
+}
+
+void Chain::addToChain(Block newBlock)
+{
+
+    if (isValidNewBlock(newBlock, getLastestBlock()))
+    {
+        blockChain.push_back(newBlock);
+    }
+}
+
+std::string Chain::to_string() const
+{
+
+    std::string str;
+
+    for (int i = 0; i < blockChain.size(); ++i)
+    {
+
+        str += blockChain.at(i).to_string();
+    }
+    return str;
+}
+

@@ -2,26 +2,31 @@
 #define _BLOCK_H_
 
 #include <string>
+#include "../include/json.hpp"
 
-class Block
+class Block 
 {
 
 public:
     
-    int index;
+
+    uint64_t index;
     std::string hash;
     std::string prev_hash;
-    long timestamp;
+    uint64_t timestamp;
     std::string data;
-
-    static Block genesisBlock;
-    static std::string calculateHash(int index, std::string prev_hash, long timestamp, std::string data);
-    static Block generateNextBlock(std::string data);
-    Block(int index, std::string hash, std::string prev_hash, long timestamp, std::string data);
+    Block(){};
+    Block(uint64_t index, std::string hash, std::string prev_hash, uint64_t timestamp, std::string data);
     bool operator ==(const Block& d) const;
     bool operator !=(const Block& d) const;
     std::string getBlockHash();
-};
+    std::string to_string() const;
 
+};
+void to_json(nlohmann::json& j, const Block& b);
+void from_json(const nlohmann::json& j, Block& b);
+Block generateNextBlock(std::string data);
+std::string calculateHash(uint64_t index, std::string prev_hash, uint64_t timestamp, std::string data);
+extern Block genesisBlock;
 
 #endif

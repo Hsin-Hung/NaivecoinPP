@@ -3,6 +3,7 @@ CXX_FLAGS := -std=c++17 #-Wall -Wextra
 
 BIN     := bin
 SRC     := src
+INCLUDE := include
 LIBRARIES   := -stdlib=libc++
 EXECUTABLE  := main
 
