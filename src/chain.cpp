@@ -1,4 +1,6 @@
 #include "chain.h"
+#include "poW.h"
+#include "p2p.h"
 
 Chain *Chain::instance = nullptr;
 
@@ -28,7 +30,15 @@ bool Chain::isValidNewBlock(Block &newBlock, Block &prevBlock)
 
         return false;
     }
-    else if (newBlock.getBlockHash() != newBlock.hash)
+    else if (newBlock.calBlockHash() != newBlock.hash)
+    {
+        return false;
+    }
+    else if (!isValidTimestamp(newBlock, prevBlock))
+    {
+        return false;
+    }
+    else if (!hasValidHash(newBlock))
     {
         return false;
     }
@@ -52,7 +62,7 @@ bool Chain::isValidChain()
 
     for (int i = 1; i < blockChain.size(); ++i)
     {
-        if (isValidNewBlock(blockChain.at(i - 1), blockChain.at(i)))
+        if (!isValidNewBlock(blockChain.at(i - 1), blockChain.at(i)))
         {
             return false;
         }
@@ -66,12 +76,17 @@ Block &Chain::getLastestBlock()
     return blockChain.back();
 }
 
-void Chain::broadcastLatest() {}
+void Chain::broadcastLatest() {
+
+
+
+}
 
 void Chain::replaceChain(std::vector<Block> newChain)
 {
 
-    if (isValidChain() && newChain.size() > blockChain.size())
+    if (isValidChain() &&
+        getAccumulateDifficulty(newChain) > getAccumulateDifficulty(Chain::getInstance()->getBlockChain()))
     {
         blockChain = newChain;
         broadcastLatest();
@@ -104,4 +119,3 @@ std::string Chain::to_string() const
     }
     return str;
 }
-
