@@ -46,12 +46,6 @@ bool Chain::isValidNewBlock(Block &newBlock, Block &prevBlock)
     return true;
 }
 
-bool Chain::isValidBlockStructure(Block &block)
-{
-
-    return true;
-}
-
 bool Chain::isValidChain()
 {
 
@@ -82,11 +76,17 @@ void Chain::broadcastLatest()
     server_instance.broadcast(blocks, LATEST_BLOCK);
 }
 
+void Chain::broadcastQueryAll()
+{
+
+    server_instance.broadcast(std::vector<Block>(), QUERY_ALL);
+}
+
 void Chain::replaceChain(std::vector<Block> newChain)
 {
 
     if (isValidChain() &&
-        getAccumulateDifficulty(newChain) > getAccumulateDifficulty(Chain::getInstance()->getBlockChain()))
+        getAccumulateDifficulty(newChain) >= getAccumulateDifficulty(Chain::getInstance()->getBlockChain()))
     {
         blockChain = newChain;
         broadcastLatest();
@@ -109,32 +109,44 @@ bool Chain::addToChain(Block newBlock)
     return false;
 }
 
-std::string Chain::to_string() const
-{
-
-    std::string str;
-
-    for (int i = 0; i < blockChain.size(); ++i)
-    {
-
-        str += blockChain.at(i).to_string();
-    }
-    return str;
-}
-
 void handleBlockchainResponse(std::vector<Block> blocks)
 {
+    if (blocks.empty())
+    {
+        std::cout << "Received empty block chain!" << std::endl;
+        return;
+    }
+    Block latestBlockReceived = blocks.back();
+    Chain *blockChain = Chain::getInstance();
+    Block lastestBlockHeld = blockChain->getLastestBlock();
+    if (latestBlockReceived.index > lastestBlockHeld.index)
+    {
+        std::cout << "blockchain possibly behind. We got "
+                  << lastestBlockHeld.index
+                  << " . They got "
+                  << latestBlockReceived.index << std::endl;
 
-    // Chain *blockChain = Chain::getInstance()->getBlockChain();
-    // Block lastestBlockHeld = blockChain->getLastestBlock();
-    // if(latestBlockReceived.index > lastestBlockHeld.index){
+        if (lastestBlockHeld.hash == latestBlockReceived.prev_hash)
+        {
+            if (blockChain->addToChain(latestBlockReceived))
+            {
+                blockChain->broadcastLatest();
+            }
+        }
+        else if (blocks.size() == 1)
+        {
+            std::cout << "We have to query the chain from our peer" << std::endl;
+            blockChain->broadcastQueryAll();
+        }
+        else
+        {
+            std::cout << "Received blockchain is longer than current blockchain" << std::endl;
+            blockChain->replaceChain(blocks);
+        }
+    }
+    else
+    {
 
-    //     if(lastestBlockHeld.hash == latestBlockReceived.prev_hash){
-    //         if(blockChain->addToChain(latestBlockReceived)){
-    //             blockChain->broadcastLatest();
-    //         }
-    //     }
-
-
-    // }
+        std::cout << "Do nothing!" << std::endl;
+    }
 }

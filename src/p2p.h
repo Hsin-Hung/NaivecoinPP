@@ -81,7 +81,6 @@ public:
         nlohmann::json j = nlohmann::json::parse(payload);
         int type = j["type"].get<int>();
         j.erase("type");
-        std::cout << "type: " << type << std::endl;
 
         nlohmann::json jSend;
 
@@ -154,7 +153,7 @@ public:
         nlohmann::json j;
         j["payload"] = blocks;
         j["type"] = type;
-        std::cout << "Broadcast !" << j.dump() << std::endl;
+        std::cout << "Broadcast : " << j.dump() << std::endl;
         for (it = m_connections.begin(); it != m_connections.end(); ++it)
         {
             m_server.send(*it, j.dump(), websocketpp::frame::opcode::text);

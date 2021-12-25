@@ -16,11 +16,11 @@ public:
     uint64_t nonce;
     uint64_t difficulty;
     Block(){};
-    Block(uint64_t index, std::string hash, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t nonce, uint64_t difficulty);
+    Block(uint64_t index, std::string hash, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t nonce, uint64_t difficulty)
+        : index{index}, hash{hash}, prev_hash{prev_hash}, timestamp{timestamp}, data{data}, nonce{nonce}, difficulty{difficulty} {}
     bool operator==(const Block &d) const;
     bool operator!=(const Block &d) const;
     std::string calBlockHash();
-    std::string to_string() const;
 };
 
 uint64_t getCurrentTimestamp();

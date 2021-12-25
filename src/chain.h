@@ -20,12 +20,11 @@ public:
     void operator=(const Chain &) = delete;
     void replaceChain(std::vector<Block> newChain);
     bool isValidNewBlock(Block &newBlock, Block &prevBlock);
-    bool isValidBlockStructure(Block &block);
     bool isValidChain();
     bool addToChain(Block newBlock);
     void broadcastLatest();
+    void broadcastQueryAll();
     std::vector<Block> getBlockChain();
-    std::string to_string() const;
 
 };
 

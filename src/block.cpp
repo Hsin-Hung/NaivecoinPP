@@ -9,32 +9,7 @@
 #include <ctime>
 #include <openssl/sha.h>
 
-Block::Block(uint64_t index, std::string hash, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t nonce, uint64_t difficulty) : index{index}, hash{hash}, prev_hash{prev_hash}, timestamp{timestamp}, data{data}, nonce{nonce}, difficulty{difficulty}
-{
-}
-
-void to_json(nlohmann::json &j, const Block &b)
-{
-    j["index"] = b.index;
-    j["hash"] = b.hash;
-    j["prev_hash"] = b.prev_hash;
-    j["timestamp"] = b.timestamp;
-    j["data"] = b.data;
-    j["nonce"] = b.nonce;
-    j["difficulty"] = b.difficulty;
-}
-
-void from_json(const nlohmann::json &j, Block &b)
-{
-
-    j.at("index").get_to(b.index);
-    j.at("hash").get_to(b.hash);
-    j.at("prev_hash").get_to(b.prev_hash);
-    j.at("timestamp").get_to(b.timestamp);
-    j.at("data").get_to(b.data);
-    j.at("nonce").get_to(b.nonce);
-    j.at("difficulty").get_to(b.difficulty);
-}
+Block genesisBlock(0, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7", "", 1465154705, "my genesis block!!", 0, 0);
 
 std::string calculateHash(uint64_t index, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t nonce, uint64_t difficulty)
 {
@@ -65,11 +40,7 @@ bool Block::operator==(const Block &block) const
 
 bool Block::operator!=(const Block &block) const
 {
-    if (*this == block)
-    {
-        return true;
-    }
-    return false;
+    return *this == block;
 }
 
 uint64_t getCurrentTimestamp()
@@ -94,25 +65,9 @@ Block generateNextBlock(std::string data)
     return newBlock;
 }
 
-std::string Block::to_string() const
-{
-
-    std::string str = "index : " + std::to_string(index) + " / ";
-    str += "hash : " + hash + " / ";
-    str += "prev_hash : " + prev_hash + " / ";
-    str += "timestamp : " + std::to_string(timestamp) + " / ";
-    str += "data : " + data + "\n";
-    return str;
-}
-
 bool hasValidHash(Block block)
 {
-    if (!hashMatchesBlockContent(block))
-    {
-        return false;
-    }
-
-    if (!hashMatchesDifficulty(block.hash, block.difficulty))
+    if (!hashMatchesBlockContent(block) || !hashMatchesDifficulty(block.hash, block.difficulty))
     {
         return false;
     }
@@ -126,4 +81,25 @@ bool hashMatchesBlockContent(Block block)
     return hash == block.hash;
 }
 
-Block genesisBlock(0, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7", "", 1465154705, "my genesis block!!", 0, 0);
+void to_json(nlohmann::json &j, const Block &b)
+{
+    j["index"] = b.index;
+    j["hash"] = b.hash;
+    j["prev_hash"] = b.prev_hash;
+    j["timestamp"] = b.timestamp;
+    j["data"] = b.data;
+    j["nonce"] = b.nonce;
+    j["difficulty"] = b.difficulty;
+}
+
+void from_json(const nlohmann::json &j, Block &b)
+{
+
+    j.at("index").get_to(b.index);
+    j.at("hash").get_to(b.hash);
+    j.at("prev_hash").get_to(b.prev_hash);
+    j.at("timestamp").get_to(b.timestamp);
+    j.at("data").get_to(b.data);
+    j.at("nonce").get_to(b.nonce);
+    j.at("difficulty").get_to(b.difficulty);
+}
