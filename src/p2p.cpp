@@ -1,31 +1,41 @@
 #include "p2p.h"
 
 broadcast_server server_instance;
+int http_server_port{8080};
+int socket_server_port{8081};
 
-void *p2pServer(void*)
+void *p2pServer(void *)
 {
-    server_instance.run(9002);
+    server_instance.run(socket_server_port);
 }
 
 // This message handler will be invoked once for each incoming message. It
 // prints the message and then sends a copy of the message back to the server.
-void on_message(client* c, websocketpp::connection_hdl hdl, message_ptr msg) {
+void on_message(client *c, websocketpp::connection_hdl hdl, message_ptr msg)
+{
     std::cout << "on_message called with hdl: " << hdl.lock().get()
               << " and message: " << msg->get_payload()
               << std::endl;
 
-
-    websocketpp::lib::error_code ec;
-
-    c->send(hdl, msg->get_payload(), msg->get_opcode(), ec);
-    if (ec) {
-        std::cout << "Echo failed because: " << ec.message() << std::endl;
-    }
+    server_instance.on_message(hdl, msg);
 }
 
-int connectToPeer(std::string uri)
+void on_open(client *c, websocketpp::connection_hdl hdl)
 {
+    std::cout << "New connection added !" << std::endl;
+    server_instance.add_new_connection(hdl);
+    nlohmann::json j;
+    j["type"] = QUERY_LATEST;
+    c->send(hdl, j.dump(), websocketpp::frame::opcode::text);
+}
 
+void on_close(client *c, websocketpp::connection_hdl hdl)
+{
+    std::cout << "Connection closed" << std::endl;
+}
+
+void *connectToPeer(void *uri)
+{
     client c;
 
     try
@@ -37,11 +47,13 @@ int connectToPeer(std::string uri)
         // Initialize ASIO
         c.init_asio();
 
-        // Register our message handler
+        // Register our handlers
+        c.set_open_handler(bind(&on_open, &c, ::_1));
+        c.set_close_handler(bind(&on_close, &c, ::_1));
         c.set_message_handler(bind(&on_message, &c, ::_1, ::_2));
 
         websocketpp::lib::error_code ec;
-        client::connection_ptr con = c.get_connection(uri, ec);
+        client::connection_ptr con = c.get_connection(*static_cast<std::string *>(uri), ec);
         if (ec)
         {
             std::cout << "could not create connection because: " << ec.message() << std::endl;
@@ -61,4 +73,6 @@ int connectToPeer(std::string uri)
     {
         std::cout << e.what() << std::endl;
     }
+
+    pthread_exit(NULL);
 }

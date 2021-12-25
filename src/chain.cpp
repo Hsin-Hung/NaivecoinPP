@@ -76,10 +76,10 @@ Block &Chain::getLastestBlock()
     return blockChain.back();
 }
 
-void Chain::broadcastLatest() {
-
-
-
+void Chain::broadcastLatest()
+{
+    std::vector<Block> blocks{getLastestBlock()};
+    server_instance.broadcast(blocks, LATEST_BLOCK);
 }
 
 void Chain::replaceChain(std::vector<Block> newChain)
@@ -98,13 +98,15 @@ std::vector<Block> Chain::getBlockChain()
     return blockChain;
 }
 
-void Chain::addToChain(Block newBlock)
+bool Chain::addToChain(Block newBlock)
 {
 
     if (isValidNewBlock(newBlock, getLastestBlock()))
     {
         blockChain.push_back(newBlock);
+        return true;
     }
+    return false;
 }
 
 std::string Chain::to_string() const
@@ -118,4 +120,21 @@ std::string Chain::to_string() const
         str += blockChain.at(i).to_string();
     }
     return str;
+}
+
+void handleBlockchainResponse(std::vector<Block> blocks)
+{
+
+    // Chain *blockChain = Chain::getInstance()->getBlockChain();
+    // Block lastestBlockHeld = blockChain->getLastestBlock();
+    // if(latestBlockReceived.index > lastestBlockHeld.index){
+
+    //     if(lastestBlockHeld.hash == latestBlockReceived.prev_hash){
+    //         if(blockChain->addToChain(latestBlockReceived)){
+    //             blockChain->broadcastLatest();
+    //         }
+    //     }
+
+
+    // }
 }

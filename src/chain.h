@@ -22,7 +22,7 @@ public:
     bool isValidNewBlock(Block &newBlock, Block &prevBlock);
     bool isValidBlockStructure(Block &block);
     bool isValidChain();
-    void addToChain(Block newBlock);
+    bool addToChain(Block newBlock);
     void broadcastLatest();
     std::vector<Block> getBlockChain();
     std::string to_string() const;
@@ -31,5 +31,5 @@ public:
 
 void to_json(nlohmann::json& j, const Chain& c);
 void from_json(const nlohmann::json& j, Chain& c);
-
+void handleBlockchainResponse(std::vector<Block> blocks);
 #endif
