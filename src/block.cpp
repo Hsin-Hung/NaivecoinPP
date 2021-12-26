@@ -78,7 +78,6 @@ Block generateRawNextBlock(std::vector<Transaction> blockData)
 }
 Block generateNextBlockWithTransaction(std::string receiverAddress, uint64_t amount)
 {
-    std::cout << "generateNextBlockWithTransaction " << amount << std::endl;
     Transaction coinbaseTx = getCoinbaseTransaction(wallet.getPublicKey(), Chain::getInstance()->getLastestBlock().index + 1);
     Transaction tx = wallet.createTransaction(receiverAddress, amount, wallet.getPrivateKey(), unspentTxOuts);
     std::vector<Transaction> blockData{coinbaseTx, tx};

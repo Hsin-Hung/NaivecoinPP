@@ -196,7 +196,6 @@ std::vector<TxOut> Wallet::createTxOuts(std::string receiverAddress, std::string
 
 Transaction Wallet::createTransaction(std::string receiverAddress, uint64_t amount, std::string privateKey, std::vector<UnspentTxOut> unspentTxOuts)
 {
-    std::cout << "createTransaction" << std::endl;
     std::string myAddress = getPublicKey();
     std::vector<UnspentTxOut> myUnspentTxOuts;
 

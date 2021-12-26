@@ -94,7 +94,7 @@ std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey,
     }
     auto pKey = EC_KEY_get0_private_key(ec_key);
 
-    sig = ECDSA_do_sign(dataToSign, 32, ec_key);
+    sig = ECDSA_do_sign_ex(dataToSign, 32, NULL, NULL, ec_key);
     if (sig == NULL)
     {
         std::cerr << "Unable to sign digest\n";
@@ -110,6 +110,7 @@ std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey,
         std::cerr << "Unable to verify signature\n";
         return "";
     }
+
     ECDSA_SIG_free(sig);
     EC_KEY_free(ec_key);
     return "";
@@ -199,10 +200,15 @@ bool validateTransaction(Transaction tx, std::vector<UnspentTxOut> aUnspentTxOut
 }
 bool validTxIn(TxIn txIn, Transaction tx, std::vector<UnspentTxOut> aUnspentTxOuts)
 {
-
-    // check private and public key with txID
-
-    // check sum of txOutput equal to sum of txInput
+    // UnspentTxOut referencedUTxOut;
+    // for (auto &uTo : aUnspentTxOuts)
+    // {
+    //     if (uTo.txOutId == txIn.txOutId && uTo.txOutIndex == txIn.txOutIndex)
+    //     {
+    //         referencedUTxOut = uTo;
+    //     }
+    // }
+    // std::string address = referencedUTxOut.address;
 
     return true;
 }

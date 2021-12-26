@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     svr.Post("/mineBlock", [](const httplib::Request &req, httplib::Response &res)
              {
-
+                std::cout << "Mine blocks!" << std::endl;
                  Block newBlock = generateNextBlock();
                  nlohmann::json j = newBlock;
                  res.set_content(j.dump(), "application/json"); });
@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
                     if (req.has_param("address") && req.has_param("amount")) {
                         auto address = req.get_param_value("address");
                         auto amount = std::stoull(req.get_param_value("amount"), nullptr, 10);
-                        std::cout << address << " " << amount << std::endl;
                         newBlock = generateNextBlockWithTransaction(address, amount);
                     }
                  nlohmann::json j = newBlock;

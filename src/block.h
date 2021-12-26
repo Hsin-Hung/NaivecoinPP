@@ -34,7 +34,6 @@ bool hasValidHash(Block block);
 bool hashMatchesBlockContent(Block block);
 Block generateRawNextBlock(std::vector<Transaction> blockData);
 Block generateNextBlockWithTransaction(std::string receiverAddress, uint64_t amount);
-
 extern Block genesisBlock;
 
 #endif

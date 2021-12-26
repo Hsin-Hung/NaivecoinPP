@@ -50,6 +50,7 @@ public:
     uint64_t txOutIndex;
     std::string address;
     uint64_t amount;
+    UnspentTxOut() = default;
     UnspentTxOut(std::string txOutId, uint64_t txOutIndex, std::string address, uint64_t amount) : txOutId{txOutId}, txOutIndex{txOutIndex}, address{address}, amount{amount} {}
 };
 
