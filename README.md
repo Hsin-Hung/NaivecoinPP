@@ -17,7 +17,8 @@ An implementation of NaiveCoin in C++
 ## TODO
 - [X] Minimal working blockcahin
 - [X] Proof of Work
-- Transactions
-- [ ] Wallet
-- [ ] Transaction relaying
+- [X] Transactions
+- [X] Wallet
+- Transaction relaying
+- [ ] Wallet UI and blockchain explorer
 
