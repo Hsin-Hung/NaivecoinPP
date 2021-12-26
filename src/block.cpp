@@ -1,6 +1,7 @@
 #include "block.h"
 #include "chain.h"
 #include "poW.h"
+#include "wallet.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -9,12 +10,13 @@
 #include <ctime>
 #include <openssl/sha.h>
 
-Block genesisBlock(0, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7", "", 1465154705, "my genesis block!!", 0, 0);
+Block genesisBlock(0, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7", "", 1465154705, std::vector<Transaction>(), 0, 0);
 
-std::string calculateHash(uint64_t index, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t nonce, uint64_t difficulty)
+std::string calculateHash(uint64_t index, std::string prev_hash, uint64_t timestamp, std::vector<Transaction> data, uint64_t nonce, uint64_t difficulty)
 {
     unsigned char sha_hash[SHA256_DIGEST_LENGTH];
-    std::string str = std::to_string(index) + prev_hash + std::to_string(timestamp) + data + std::to_string(nonce) + std::to_string(difficulty);
+    nlohmann::json j = data;
+    std::string str = std::to_string(index) + prev_hash + std::to_string(timestamp) + j.dump() + std::to_string(nonce) + std::to_string(difficulty);
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, str.c_str(), str.size());
@@ -40,7 +42,7 @@ bool Block::operator==(const Block &block) const
 
 bool Block::operator!=(const Block &block) const
 {
-    return *this == block;
+    return !(*this == block);
 }
 
 uint64_t getCurrentTimestamp()
@@ -52,17 +54,35 @@ uint64_t getCurrentTimestamp()
     return cur_timestamp;
 }
 
-Block generateNextBlock(std::string data)
+Block generateNextBlock()
+{
+    Transaction coinbaseTx = getCoinbaseTransaction(wallet.getPublicKey(), Chain::getInstance()->getLastestBlock().index + 1);
+    std::vector<Transaction> blockData{coinbaseTx};
+    return generateRawNextBlock(blockData);
+}
+
+Block generateRawNextBlock(std::vector<Transaction> blockData)
 {
     Chain *chain = Chain::getInstance();
-    Block &prev_block = chain->getLastestBlock();
-    uint64_t difficulty = getDifficulty(Chain::getInstance()->getBlockChain());
-    uint64_t next_index = prev_block.index + 1;
-    uint64_t next_timestamp = getCurrentTimestamp();
-    Block newBlock = findBlock(next_index, prev_block.hash, next_timestamp, data, difficulty);
-    chain->addToChain(newBlock);
-    chain->broadcastLatest();
+    Block previousBlock = chain->getLastestBlock();
+    uint64_t difficulty = getDifficulty(chain->getBlockChain());
+    uint64_t nextIndex = previousBlock.index + 1;
+    uint64_t nextTimestamp = getCurrentTimestamp();
+    Block newBlock = findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
+    if (chain->addToChain(newBlock))
+    {
+        chain->broadcastLatest();
+    }
+
     return newBlock;
+}
+Block generateNextBlockWithTransaction(std::string receiverAddress, uint64_t amount)
+{
+    std::cout << "generateNextBlockWithTransaction " << amount << std::endl;
+    Transaction coinbaseTx = getCoinbaseTransaction(wallet.getPublicKey(), Chain::getInstance()->getLastestBlock().index + 1);
+    Transaction tx = wallet.createTransaction(receiverAddress, amount, wallet.getPrivateKey(), unspentTxOuts);
+    std::vector<Transaction> blockData{coinbaseTx, tx};
+    return generateRawNextBlock(blockData);
 }
 
 bool hasValidHash(Block block)

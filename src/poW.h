@@ -16,7 +16,7 @@ std::string hexToBin(std::string hexdec);
 
 bool hashMatchesDifficulty(std::string hash, uint64_t difficulty);
 
-Block findBlock(uint64_t index, std::string prev_hash, uint64_t timestamp, std::string data, uint64_t difficulty);
+Block findBlock(uint64_t index, std::string prev_hash, uint64_t timestamp, std::vector<Transaction> data, uint64_t difficulty);
 
 uint64_t getAdjustedDifficulty(Block latestBLock, std::vector<Block> aBlockChain);
 

@@ -1,5 +1,12 @@
+#ifndef _TX_H_
+#define _TX_H_
+
 #include <string>
 #include <vector>
+#include "../include/json.hpp"
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+#include <utility>
 
 #define COINBASE_AMOUNT 50
 
@@ -8,8 +15,10 @@ class TxOut
 public:
     std::string address;
     uint64_t amount;
-
+    TxOut(){};
     TxOut(std::string address, uint64_t amount) : address{address}, amount{amount} {}
+    bool operator==(const TxOut &txOut) const;
+    bool operator!=(const TxOut &txOut) const;
 };
 
 class TxIn
@@ -18,8 +27,10 @@ public:
     std::string txOutId;
     uint64_t txOutIndex;
     std::string signature;
-
+    TxIn(){};
     TxIn(std::string txOutId, uint64_t txOutIndex, std::string signature) : txOutId{txOutId}, txOutIndex{txOutIndex}, signature{signature} {}
+    bool operator==(const TxIn &txIn) const;
+    bool operator!=(const TxIn &txIn) const;
 };
 
 class Transaction
@@ -28,24 +39,36 @@ public:
     std::string id;
     std::vector<TxIn> txIns;
     std::vector<TxOut> txOuts;
+    bool operator==(const Transaction &b) const;
+    bool operator!=(const Transaction &b) const;
 };
 
 class UnspentTxOut
 {
 public:
-    const std::string txOutId;
-    const uint64_t txOutIndex;
-    const std::string address;
-    const uint64_t amount;
+    std::string txOutId;
+    uint64_t txOutIndex;
+    std::string address;
+    uint64_t amount;
     UnspentTxOut(std::string txOutId, uint64_t txOutIndex, std::string address, uint64_t amount) : txOutId{txOutId}, txOutIndex{txOutIndex}, address{address}, amount{amount} {}
 };
 
 extern std::vector<UnspentTxOut> unspentTxOuts;
-
-std::vector<UnspentTxOut> newUnspentTxOuts(std::vector<Transaction> newTxs);
-std::vector<UnspentTxOut> consumedTxOuts(std::vector<Transaction> newTxs);
-std::vector<UnspentTxOut> resultingUnspentTxOuts(std::vector<UnspentTxOut>  newUnspentTxOuts, std::vector<UnspentTxOut> consumedTxOuts);
+extern EC_KEY *eckey;
+std::vector<UnspentTxOut> updateUnspentTxOuts(std::vector<Transaction> newTransactions, std::vector<UnspentTxOut> aUnspentTxOuts);
 std::string getTransactionId(Transaction tx);
 std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey, std::vector<UnspentTxOut> aUnspentTxOuts);
 UnspentTxOut *findUnspentTxOut(std::string txId, uint64_t index, std::vector<UnspentTxOut> aUnspentTxOuts);
 bool validTxIn(TxIn txIn, Transaction tx, std::vector<UnspentTxOut> aUnspentTxOuts);
+bool validateTransaction(Transaction tx, std::vector<UnspentTxOut> aUnspentTxOuts);
+void generate_key_pair(std::string &pub_key, std::string &priv_key);
+void to_json(nlohmann::json &j, const Transaction &tx);
+void from_json(const nlohmann::json &j, Transaction &tx);
+void to_json(nlohmann::json &j, const TxOut &txOut);
+void from_json(const nlohmann::json &j, TxOut &txOut);
+void to_json(nlohmann::json &j, const TxIn &txIn);
+void from_json(const nlohmann::json &j, TxIn &txIn);
+std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey, std::vector<UnspentTxOut> unspentTxOuts);
+Transaction getCoinbaseTransaction(std::string address, uint64_t blockIndex);
+std::vector<UnspentTxOut> processTransactions(std::vector<Transaction> aTransactions, std::vector<UnspentTxOut> aUnspentTxOuts, uint64_t blockIndex);
+#endif

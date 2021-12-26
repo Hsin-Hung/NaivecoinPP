@@ -1,4 +1,5 @@
 #include "chain.h"
+#include "transaction.h"
 #include "poW.h"
 #include "p2p.h"
 
@@ -103,7 +104,9 @@ bool Chain::addToChain(Block newBlock)
 
     if (isValidNewBlock(newBlock, getLastestBlock()))
     {
+        std::vector<UnspentTxOut> retVal = processTransactions(newBlock.data, unspentTxOuts, newBlock.index);
         blockChain.push_back(newBlock);
+        unspentTxOuts = retVal;
         return true;
     }
     return false;
