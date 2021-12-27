@@ -1,11 +1,5 @@
 # NaiveCoinPP
 
-## Source
-
-https://lhartikk.github.io/
-
-https://github.com/lhartikk/naivecoin
-
 ## Description
 An implementation of NaiveCoin in C++
 
@@ -22,3 +16,8 @@ An implementation of NaiveCoin in C++
 - Transaction relaying
 - [ ] Wallet UI and blockchain explorer
 
+## reference source
+
+https://lhartikk.github.io/
+
+https://github.com/lhartikk/naivecoin
