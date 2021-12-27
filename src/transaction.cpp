@@ -1,17 +1,5 @@
 #include "transaction.h"
 #include "wallet.h"
-#include <openssl/ecdsa.h>
-#include <openssl/ecdh.h>
-#include <openssl/sha.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <cassert>
-#include <iomanip>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
-#include <iterator>
-#include <stdio.h>
 
 EC_KEY *eckey = EC_KEY_new();
 std::vector<UnspentTxOut> unspentTxOuts;
@@ -85,7 +73,7 @@ std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey,
         return "";
     }
 
-    ECDSA_SIG *sig;
+    ECDSA_SIG *sig, *sig2;
     EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
     {
         FILE *f = fopen(PRIVATE_KEY_LOCATION, "r");
@@ -111,9 +99,13 @@ std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey,
         return "";
     }
 
+    std::string sig_r = BN_bn2hex(sig->r), sig_s = BN_bn2hex(sig->s);
+    std::string sig_str = sig_r + ":" + sig_s;
+    std::cout << sig_str << std::endl;
     ECDSA_SIG_free(sig);
     EC_KEY_free(ec_key);
-    return "";
+
+    return sig_str;
 }
 
 UnspentTxOut *findUnspentTxOut(std::string txId, uint64_t index, std::vector<UnspentTxOut> aUnspentTxOuts)
@@ -200,16 +192,46 @@ bool validateTransaction(Transaction tx, std::vector<UnspentTxOut> aUnspentTxOut
 }
 bool validTxIn(TxIn txIn, Transaction tx, std::vector<UnspentTxOut> aUnspentTxOuts)
 {
-    // UnspentTxOut referencedUTxOut;
-    // for (auto &uTo : aUnspentTxOuts)
-    // {
-    //     if (uTo.txOutId == txIn.txOutId && uTo.txOutIndex == txIn.txOutIndex)
-    //     {
-    //         referencedUTxOut = uTo;
-    //     }
-    // }
-    // std::string address = referencedUTxOut.address;
+    UnspentTxOut referencedUTxOut;
+    for (auto &uTo : aUnspentTxOuts)
+    {
+        if (uTo.txOutId == txIn.txOutId && uTo.txOutIndex == txIn.txOutIndex)
+        {
+            referencedUTxOut = uTo;
+        }
+    }
+    std::string address = referencedUTxOut.address;
 
+    std::pair<std::string, std::string> signatureRS = getSignatureRS(txIn.signature, ":");
+
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+    EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    EC_POINT *pubkey;
+    BN_CTX *ctx;
+
+    ctx = BN_CTX_new();
+    EC_POINT_hex2point(group, address.c_str(), pubkey, ctx);
+    EC_KEY_set_public_key(ec_key, pubkey);
+
+    int verified;
+    const unsigned char *dataToVerify = (unsigned char *)tx.id.c_str();
+    ECDSA_SIG *sig;
+    sig = ECDSA_SIG_new();
+
+    BIGNUM *sig_rbn = NULL, *sig_sbn = NULL;
+    BN_hex2bn(&sig_rbn, signatureRS.first.c_str());
+    BN_hex2bn(&sig_sbn, signatureRS.second.c_str());
+    sig->r = sig_rbn;
+    sig->s = sig_sbn;
+
+    verified = ECDSA_do_verify(dataToVerify,
+                               32,
+                               sig, ec_key);
+    if (verified != 1)
+    {
+        std::cerr << "Unable to verify signature\n";
+        return false;
+    }
     return true;
 }
 
@@ -253,6 +275,24 @@ Transaction getCoinbaseTransaction(std::string address, uint64_t blockIndex)
     t.txOuts = std::vector<TxOut>{TxOut(address, COINBASE_AMOUNT)};
     t.id = getTransactionId(t);
     return t;
+}
+std::pair<std::string, std::string> getSignatureRS(std::string signature, std::string delimiter)
+{
+
+    std::vector<std::string> sigs{};
+
+    size_t pos = 0;
+    std::string token;
+    while ((pos = signature.find(delimiter)) != std::string::npos)
+    {
+        token = signature.substr(0, pos);
+        sigs.push_back(token);
+        std::cout << token << std::endl;
+        signature.erase(0, pos + delimiter.length());
+    }
+
+    sigs.push_back(signature);
+    return std::make_pair(sigs.at(0), sigs.at(1));
 }
 
 void to_json(nlohmann::json &j, const Transaction &t)

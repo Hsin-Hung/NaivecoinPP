@@ -1,6 +1,7 @@
 #include "block.h"
 #include "chain.h"
 #include "wallet.h"
+#include "transaction.h"
 #include <iostream>
 #include <sstream>
 #include <string>

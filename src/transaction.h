@@ -1,15 +1,34 @@
 #ifndef _TX_H_
 #define _TX_H_
 
-#include <string>
-#include <vector>
 #include "../include/json.hpp"
 #include <openssl/ec.h>
 #include <openssl/evp.h>
+#include <openssl/ecdsa.h>
+#include <openssl/ecdh.h>
+#include <openssl/sha.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/opensslv.h>
+#include <cassert>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <stdio.h>
 #include <utility>
+#include <string>
+#include <vector>
 
 #define COINBASE_AMOUNT 50
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+typedef struct ECDSA_SIG_st {
+    BIGNUM *r;
+    BIGNUM *s;
+} ECDSA_SIG;
+#endif
 class TxOut
 {
 public:
@@ -72,4 +91,5 @@ void from_json(const nlohmann::json &j, TxIn &txIn);
 std::string signTxIn(Transaction tx, uint64_t txInIndex, std::string privateKey, std::vector<UnspentTxOut> unspentTxOuts);
 Transaction getCoinbaseTransaction(std::string address, uint64_t blockIndex);
 std::vector<UnspentTxOut> processTransactions(std::vector<Transaction> aTransactions, std::vector<UnspentTxOut> aUnspentTxOuts, uint64_t blockIndex);
+std::pair<std::string, std::string> getSignatureRS(std::string signature, std::string delimiter);
 #endif
