@@ -25,10 +25,12 @@ public:
     void broadcastLatest();
     void broadcastQueryAll();
     std::vector<Block> getBlockChain();
+    Transaction sendTransaction(std::string address, uint64_t amount);
 
 };
 
 void to_json(nlohmann::json& j, const Chain& c);
 void from_json(const nlohmann::json& j, Chain& c);
 void handleBlockchainResponse(std::vector<Block> blocks);
+Transaction sendTransaction(std::string address, uint64_t amount);
 #endif

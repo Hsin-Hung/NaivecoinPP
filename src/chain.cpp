@@ -1,7 +1,10 @@
 #include "chain.h"
 #include "transaction.h"
+#include "transactionPool.h"
+#include "wallet.h"
 #include "poW.h"
 #include "p2p.h"
+#include "wallet.h"
 
 Chain *Chain::instance = nullptr;
 
@@ -111,6 +114,11 @@ bool Chain::addToChain(Block newBlock)
     }
     return false;
 }
+
+// Transaction sendTransaction(std::string address, uint64_t amount)
+// {
+
+// }
 
 void handleBlockchainResponse(std::vector<Block> blocks)
 {

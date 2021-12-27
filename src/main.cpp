@@ -51,6 +51,10 @@ int main(int argc, char *argv[])
                     }
                  nlohmann::json j = newBlock;
                  res.set_content(j.dump(), "application/json"); });
+    svr.Post("/sendTransaction", [](const httplib::Request &req, httplib::Response &res)
+             {
+                std::cout << "Send TX!" << req.body<< std::endl;
+                 res.set_content("send tx", "application/json"); });
     svr.Get("/balance", [](const httplib::Request &, httplib::Response &res)
             {
                 std::cout << "Get balance!" << std::endl;
