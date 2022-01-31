@@ -1,4 +1,4 @@
-# NaiveCoinPP
+# NaiveCoin-cpp
 
 ## Description
 An implementation of NaiveCoin in C++
